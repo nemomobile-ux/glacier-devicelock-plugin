@@ -15,4 +15,4 @@ find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS Core DBus REQUIRED)
 add_subdirectory(src)
 
 install(FILES devicelock.conf
-        DESTINATION /usr/lib/qt5/plugins/devicelock/)
+        DESTINATION /usr/share/lipstick/devicelock/)

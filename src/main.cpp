@@ -35,14 +35,17 @@ int main(int argc, char *argv[])
     --wipe
 */
     QCoreApplication a(argc, argv);
+    int exitCode = NemoDeviceLock::HostAuthenticationInput::Failure;
 
     DeviceLocking *dvl = new DeviceLocking();
     QCommandLineOption isSet(QStringList() << "is-set");
+    QCommandLineOption unlock(QStringList() << "unlock");
     QCommandLineOption checkCode(QStringList() << "check-code");
     QCommandLineOption setCode(QStringList() << "set-code");
     QCommandLineOption isEncryptionSupported(QStringList() << "is-encryption-supported");
     QCommandLineOption encryptHome(QStringList() << "encrypt-home");
     QCommandLineOption wipe(QStringList() << "wipe");
+    QCommandLineOption clearCode(QStringList() << "clear-code");
 
     QCommandLineParser parser;
     parser.addOption(isSet);
@@ -55,48 +58,50 @@ int main(int argc, char *argv[])
 
     if(parser.isSet(isSet)) {
         if(dvl->isSet()) {
-            return NemoDeviceLock::HostAuthenticationInput::Success;
+            exitCode = NemoDeviceLock::HostAuthenticationInput::Success;
         }
     }
 
-    if(parser.isSet(checkCode)) {
+    if(parser.isSet(checkCode) || parser.isSet(unlock)) {
         const QStringList args = parser.positionalArguments();
 
         if(args.length() != 1) {
-            return NemoDeviceLock::HostAuthenticationInput::Failure;
+            exitCode = NemoDeviceLock::HostAuthenticationInput::Failure;
         }
 
         if(dvl->checkCode(args[0].toUtf8())) {
-            return NemoDeviceLock::HostAuthenticationInput::Success;
+            exitCode = NemoDeviceLock::HostAuthenticationInput::Success;
         }
     }
 
     if(parser.isSet(setCode)) {
         const QStringList args = parser.positionalArguments();
         if(args.length() != 2) {
-            return NemoDeviceLock::HostAuthenticationInput::Failure;
+            exitCode = NemoDeviceLock::HostAuthenticationInput::Failure;
         }
 
         if(dvl->setCode(args[0].toUtf8(), args[1].toUtf8())) {
-            return NemoDeviceLock::HostAuthenticationInput::Success;
+            exitCode = NemoDeviceLock::HostAuthenticationInput::Success;
         }
     }
 
     if(parser.isSet(isEncryptionSupported)) {
         if(dvl->isEncryptionSupported()) {
-            return NemoDeviceLock::HostAuthenticationInput::Success;
+            exitCode = NemoDeviceLock::HostAuthenticationInput::Success;
         }
     }
 
     if(parser.isSet(encryptHome)) {
         dvl->encryptHome();
+        exitCode = NemoDeviceLock::HostAuthenticationInput::Success;
     }
 
-    if(parser.isSet(wipe)) {
+    if(parser.isSet(wipe) || parser.isSet(clearCode)) {
         dvl->wipe();
+        exitCode = NemoDeviceLock::HostAuthenticationInput::Success;
     }
 
     dvl->~DeviceLocking();
 
-    return NemoDeviceLock::HostAuthenticationInput::Failure;
+    exit(exitCode);
 }
