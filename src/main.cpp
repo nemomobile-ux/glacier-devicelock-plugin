@@ -61,6 +61,11 @@ int main(int argc, char *argv[])
 
     if(parser.isSet(checkCode)) {
         const QStringList args = parser.positionalArguments();
+
+        if(args.length() != 1) {
+            return NemoDeviceLock::HostAuthenticationInput::Failure;
+        }
+
         if(dvl->checkCode(args[0].toUtf8())) {
             return NemoDeviceLock::HostAuthenticationInput::Success;
         }
@@ -68,6 +73,10 @@ int main(int argc, char *argv[])
 
     if(parser.isSet(setCode)) {
         const QStringList args = parser.positionalArguments();
+        if(args.length() != 2) {
+            return NemoDeviceLock::HostAuthenticationInput::Failure;
+        }
+
         if(dvl->setCode(args[0].toUtf8(), args[1].toUtf8())) {
             return NemoDeviceLock::HostAuthenticationInput::Success;
         }
