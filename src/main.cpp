@@ -49,11 +49,13 @@ int main(int argc, char *argv[])
 
     QCommandLineParser parser;
     parser.addOption(isSet);
+    parser.addOption(unlock);
     parser.addOption(checkCode);
     parser.addOption(setCode);
     parser.addOption(isEncryptionSupported);
     parser.addOption(encryptHome);
     parser.addOption(wipe);
+    parser.addOption(clearCode);
     parser.process(a);
 
     if(parser.isSet(isSet)) {
