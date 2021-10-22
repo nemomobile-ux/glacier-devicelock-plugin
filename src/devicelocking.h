@@ -36,6 +36,7 @@ public:
     bool checkCode(QByteArray code);
     bool setCode(QByteArray oldCode, QByteArray code);
 
+    bool setConfigKey(QByteArray key, QByteArray value);
 
 private:
     QString currentUser();

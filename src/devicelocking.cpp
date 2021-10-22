@@ -23,6 +23,9 @@
 #include <QDebug>
 #include <QCryptographicHash>
 
+#include <glib.h>
+#include <unistd.h>
+
 DeviceLocking::DeviceLocking(QObject *parent)
 {
     m_currentUser = currentUser();
@@ -107,6 +110,44 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
     keyFile.open(QIODevice::WriteOnly);
     keyFile.write(key);
     keyFile.close();
+
+    return true;
+}
+
+bool DeviceLocking::setConfigKey(QByteArray key, QByteArray value)
+{
+/*Preparate keyvalue*/
+    QByteArray groupName = QString(key).split("/").at(1).toUtf8();
+    key.remove(0,groupName.length()+2);
+    key.replace("/","\\");
+
+/*Write to config*/
+    GError *error = nullptr;
+    gchar *str;
+    GKeyFile * const settings = g_key_file_new();
+
+    g_key_file_load_from_file(settings
+                              , "/usr/share/lipstick/devicelock/devicelock_settings.conf"
+                              , G_KEY_FILE_NONE
+                              , &error);
+
+    if(error) {
+        return false;
+    }
+
+    g_key_file_set_string(settings
+                          ,groupName.constData()
+                          ,key.constData()
+                          ,value.constData());
+
+
+    str = g_key_file_to_data (settings, NULL, NULL);
+    g_key_file_free(settings);
+    error = nullptr;
+
+    if (!g_file_set_contents("/usr/share/lipstick/devicelock/devicelock_settings.conf", str, -1, &error)) {
+        return false;
+    }
 
     return true;
 }

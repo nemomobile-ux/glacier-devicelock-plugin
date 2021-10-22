@@ -11,6 +11,9 @@ include(GNUInstallDirs)
 
 set(QT_MIN_VERSION "5.12.0")
 find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS Core DBus REQUIRED)
+find_package(PkgConfig REQUIRED)
+
+pkg_search_module(GLIB REQUIRED glib-2.0)
 
 add_subdirectory(src)
 
