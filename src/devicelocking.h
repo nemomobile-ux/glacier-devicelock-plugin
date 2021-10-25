@@ -43,7 +43,8 @@ private:
     QString m_currentUser;
     QString m_settingsPath;
 
-    QByteArray getConfigKey(QByteArray group, QByteArray key);
+    QByteArray getConfigKey(QByteArray group, QByteArray key, QByteArray defaultValue = "-1");
+    void initConfig();
 };
 
 #endif // DEVICELOCKING_H

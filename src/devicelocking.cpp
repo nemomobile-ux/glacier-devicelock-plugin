@@ -39,6 +39,10 @@ DeviceLocking::DeviceLocking(QObject *parent)
     if(!deviceLockDir.exists()) {
         deviceLockDir.mkpath("/home/"+m_currentUser+"/.config/glacier-devicelock/");
     }
+
+    if(!QFile::exists(m_settingsPath)) {
+        initConfig();
+    }
 }
 
 DeviceLocking::~DeviceLocking()
@@ -97,7 +101,7 @@ bool DeviceLocking::checkCode(QByteArray code)
         return true;
     }
 
-    int ca = getConfigKey("desktop", "nemo\\devicelock\\current_attempts").toUInt();
+    int ca = getConfigKey("desktop", "nemo\\devicelock\\current_attempts", "0").toUInt();
     QByteArray currentAttempts;
     currentAttempts.setNum(ca + 1);
     setConfigKey("/desktop/nemo/devicelock/current_attempts", currentAttempts);
@@ -120,8 +124,8 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
         }
     }
 
-    int minLength = getConfigKey("desktop", "nemo\\devicelock\\code_min_length").toInt();
-    int maxLength = getConfigKey("desktop", "nemo\\devicelock\\code_max_length").toInt();
+    int minLength = getConfigKey("desktop", "nemo\\devicelock\\code_min_length", "5").toInt();
+    int maxLength = getConfigKey("desktop", "nemo\\devicelock\\code_max_length", "42").toInt();
 
     if(_code.length() < minLength || _code.length() > maxLength) {
         return false;
@@ -188,7 +192,7 @@ QString DeviceLocking::currentUser()
     return "manjaro";
 }
 
-QByteArray DeviceLocking::getConfigKey(QByteArray group, QByteArray key)
+QByteArray DeviceLocking::getConfigKey(QByteArray group, QByteArray key, QByteArray defaultValue)
 {
     GError *error = nullptr;
     gchar *str;
@@ -211,8 +215,36 @@ QByteArray DeviceLocking::getConfigKey(QByteArray group, QByteArray key)
 
     if(error) {
         qWarning() << "Can't get key" << key << "from" << m_settingsPath;
-        return QByteArray();
+        setConfigKey("/"+group+"/"+key, defaultValue);
+        return defaultValue;
     }
 
     return QByteArray(string);
+}
+
+void DeviceLocking::initConfig()
+{
+    QDir confDir("/usr/share/lipstick/devicelock/");
+    if(!confDir.exists()) {
+        confDir.mkpath("/usr/share/lipstick/devicelock/");
+    }
+    QFile configFile(m_settingsPath);
+    configFile.open(QIODevice::WriteOnly|QIODevice::Append);
+    configFile.close();
+
+    QByteArray confBase = "/desktop/nemo/devicelock/";
+
+// Load def value like here https://github.com/sailfishos/nemo-qml-plugin-devicelock/blob/master/src/nemo-devicelock/private/settingswatcher.cpp#L68
+    setConfigKey(confBase+"automatic_locking", "0");
+    setConfigKey(confBase+"code_current_length", "0");
+    setConfigKey(confBase+"code_min_length", "5");
+    setConfigKey(confBase+"code_max_length", "42");
+    setConfigKey(confBase+"maximum_attempts", "-1");
+    setConfigKey(confBase+"current_attempts", "0");
+    setConfigKey(confBase+"peeking_allowed", "1");
+    setConfigKey(confBase+"sideloading_allowed", "-1");
+    setConfigKey(confBase+"show_notification", "1");
+    setConfigKey(confBase+"code_input_is_keyboard", "false");
+    setConfigKey(confBase+"code_current_is_digit_only", "true");
+    setConfigKey(confBase+"encrypt_home", "false");
 }

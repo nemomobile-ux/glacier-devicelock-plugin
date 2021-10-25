@@ -19,6 +19,3 @@ add_subdirectory(src)
 
 install(FILES devicelock.conf
     DESTINATION /usr/share/lipstick/devicelock/)
-
-install(FILES devicelock_settings.conf
-    DESTINATION /usr/share/lipstick/devicelock/)
