@@ -133,6 +133,10 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
     keyFile.write(key);
     keyFile.close();
 
+    QByteArray codeLength;
+    codeLength.setNum(_code.length());
+    setConfigKey("/desktop/nemo/devicelock/code_current_length", codeLength);
+
     return true;
 }
 
