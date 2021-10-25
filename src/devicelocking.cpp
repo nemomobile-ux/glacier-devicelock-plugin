@@ -27,6 +27,8 @@
 #include <unistd.h>
 
 DeviceLocking::DeviceLocking(QObject *parent)
+    : QObject()
+    , m_settingsPath("/usr/share/lipstick/devicelock/devicelock_settings.conf")
 {
     m_currentUser = currentUser();
     if(m_currentUser.isEmpty()) {
@@ -103,7 +105,10 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
         }
     }
 
-    if(code.length() < 4) {
+    int minLength = getConfigKey("desktop", "nemo\\devicelock\\code_min_length").toInt();
+    int maxLength = getConfigKey("desktop", "nemo\\devicelock\\code_max_length").toInt();
+
+    if(code.length() < minLength || code.length() > maxLength) {
         return false;
     }
 
@@ -129,7 +134,7 @@ bool DeviceLocking::setConfigKey(QByteArray key, QByteArray value)
     GKeyFile * const settings = g_key_file_new();
 
     g_key_file_load_from_file(settings
-                              , "/usr/share/lipstick/devicelock/devicelock_settings.conf"
+                              , m_settingsPath.toUtf8().constData()
                               , G_KEY_FILE_NONE
                               , &error);
 
@@ -162,4 +167,33 @@ QString DeviceLocking::currentUser()
      */
 
     return "manjaro";
+}
+
+QByteArray DeviceLocking::getConfigKey(QByteArray group, QByteArray key)
+{
+    GError *error = nullptr;
+    gchar *str;
+    GKeyFile * const settings = g_key_file_new();
+
+    g_key_file_load_from_file(settings
+                              , m_settingsPath.toUtf8().constData()
+                              , G_KEY_FILE_NONE
+                              , &error);
+    if(error) {
+        qWarning() << "Error load settings file" << m_settingsPath;
+        return QByteArray();
+    }
+
+    error = nullptr;
+    gchar *string = g_key_file_get_string(settings,
+                          group.constData(),
+                          key.constData(),
+                          &error);
+
+    if(error) {
+        qWarning() << "Can't get key" << key << "from" << m_settingsPath;
+        return QByteArray();
+    }
+
+    return QByteArray(string);
 }

@@ -41,6 +41,9 @@ public:
 private:
     QString currentUser();
     QString m_currentUser;
+    QString m_settingsPath;
+
+    QByteArray getConfigKey(QByteArray group, QByteArray key);
 };
 
 #endif // DEVICELOCKING_H
