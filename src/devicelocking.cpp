@@ -32,7 +32,6 @@ DeviceLocking::DeviceLocking(QObject *parent)
 {
     m_currentUser = currentUser();
     if(m_currentUser.isEmpty()) {
-        qDebug() << "FUCK!";
         exit(NemoDeviceLock::HostAuthenticationInput::Failure);
     }
 
@@ -90,8 +89,18 @@ bool DeviceLocking::checkCode(QByteArray code)
     keyFile.close();
 
     if(key == QCryptographicHash::hash(code, QCryptographicHash::Sha256)) {
+        setConfigKey("/desktop/nemo/devicelock/current_attempts", "0");
+
+        QByteArray changeData;
+        changeData.setNum(QDateTime::currentSecsSinceEpoch());
+        setConfigKey("/desktop/nemo/devicelock/code_last_changed", changeData);
         return true;
     }
+
+    int ca = getConfigKey("desktop", "nemo\\devicelock\\current_attempts").toUInt();
+    QByteArray currentAttempts;
+    currentAttempts.setNum(ca + 1);
+    setConfigKey("/desktop/nemo/devicelock/current_attempts", currentAttempts);
 
     return false;
 }
