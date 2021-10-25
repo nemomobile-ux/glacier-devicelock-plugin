@@ -98,6 +98,12 @@ bool DeviceLocking::checkCode(QByteArray code)
 
 bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
 {
+    QByteArray _oldCode;
+    QByteArray _code;
+
+    _oldCode.setNum(oldCode.toInt());
+    _code.setNum(code.toInt());
+
     QFile keyFile("/home/"+m_currentUser+"/.config/glacier-devicelock/key");
     if(keyFile.exists()) {
         if(!checkCode(oldCode)) {
@@ -108,11 +114,11 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
     int minLength = getConfigKey("desktop", "nemo\\devicelock\\code_min_length").toInt();
     int maxLength = getConfigKey("desktop", "nemo\\devicelock\\code_max_length").toInt();
 
-    if(code.length() < minLength || code.length() > maxLength) {
+    if(_code.length() < minLength || _code.length() > maxLength) {
         return false;
     }
 
-    QByteArray key = QCryptographicHash::hash(code, QCryptographicHash::Sha256);
+    QByteArray key = QCryptographicHash::hash(_code, QCryptographicHash::Sha256);
 
     keyFile.open(QIODevice::WriteOnly);
     keyFile.write(key);
