@@ -97,8 +97,10 @@ bool DeviceLocking::checkCode(QByteArray code)
 bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
 {
     QFile keyFile("/home/"+m_currentUser+"/.config/glacier-devicelock/key");
-    if(!checkCode(oldCode) && keyFile.exists()) {
-        return false;
+    if(keyFile.exists()) {
+        if(!checkCode(oldCode)) {
+            return false;
+        }
     }
 
     if(code.length() < 4) {
