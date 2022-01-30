@@ -184,12 +184,11 @@ bool DeviceLocking::setConfigKey(QByteArray key, QByteArray value)
 
 QString DeviceLocking::currentUser()
 {
-    /*
-     * TODO: check to logind to current user session.
-     * See here: https://www.freedesktop.org/wiki/Software/systemd/logind/
-     */
-
-    return "manjaro";
+    QString name = qgetenv("USER");
+    if (name.isEmpty()) {
+        name = qgetenv("USERNAME");
+    }
+    return name;
 }
 
 QByteArray DeviceLocking::getConfigKey(QByteArray group, QByteArray key, QByteArray defaultValue)
