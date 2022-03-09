@@ -39,9 +39,9 @@ public:
     bool setConfigKey(QByteArray key, QByteArray value);
 
 private:
-    QString currentUser();
-    QString m_currentUser;
-    QString m_settingsPath;
+    const QString currentUser();
+    const QString m_currentUser;
+    const QString m_settingsPath;
 
     QByteArray getConfigKey(QByteArray group, QByteArray key, QByteArray defaultValue = "-1");
     void initConfig();

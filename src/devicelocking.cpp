@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Chupligin Sergey <neochapay@gmail.com>
+ * Copyright (C) 2021-2022 Chupligin Sergey <neochapay@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -29,9 +29,9 @@
 DeviceLocking::DeviceLocking(QObject *parent)
     : QObject()
     , m_settingsPath("/usr/share/lipstick/devicelock/devicelock_settings.conf")
+    , m_currentUser(currentUser())
 {
-    m_currentUser = currentUser();
-    if(m_currentUser.isEmpty()) {
+    if(m_currentUser.isEmpty() || m_currentUser == "root") {
         exit(NemoDeviceLock::HostAuthenticationInput::Failure);
     }
 
@@ -182,7 +182,7 @@ bool DeviceLocking::setConfigKey(QByteArray key, QByteArray value)
     return true;
 }
 
-QString DeviceLocking::currentUser()
+const QString DeviceLocking::currentUser()
 {
     QString name = qgetenv("USER");
     if (name.isEmpty()) {
