@@ -22,6 +22,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QCryptographicHash>
+#include <QStandardPaths>
 
 #include <glib.h>
 #include <unistd.h>
@@ -34,10 +35,10 @@ DeviceLocking::DeviceLocking(QObject *parent)
     if(m_currentUser.isEmpty() || m_currentUser == "root") {
         exit(NemoDeviceLock::HostAuthenticationInput::Failure);
     }
-
-    QDir deviceLockDir("/home/"+m_currentUser+"/.config/glacier-devicelock/");
+    QString deviceLockDirPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QDir deviceLockDir(deviceLockDirPath);
     if(!deviceLockDir.exists()) {
-        deviceLockDir.mkpath("/home/"+m_currentUser+"/.config/glacier-devicelock/");
+        deviceLockDir.mkpath(deviceLockDirPath);
     }
 
     if(!QFile::exists(m_settingsPath)) {
@@ -52,7 +53,7 @@ DeviceLocking::~DeviceLocking()
 
 bool DeviceLocking::isSet()
 {
-    QFile keyFile("/home/"+m_currentUser+"/.config/glacier-devicelock/key");
+    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)+"/key");
     if(keyFile.exists() && keyFile.size() > 0) {
         return true;
     }
@@ -78,7 +79,7 @@ void DeviceLocking::wipe()
     /*
      * TODO add correct wipe. Now wipe just remove key code file
      */
-    QFile::remove("/home/"+m_currentUser+"/.config/glacier-devicelock/key");
+    QFile::remove(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)+"/key");
 }
 
 bool DeviceLocking::checkCode(QByteArray code)
@@ -87,7 +88,7 @@ bool DeviceLocking::checkCode(QByteArray code)
         return false;
     }
 
-    QFile keyFile("/home/"+m_currentUser+"/.config/glacier-devicelock/key");
+    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)+"/key");
     keyFile.open(QIODevice::ReadOnly);
     QString key = keyFile.readLine();
     keyFile.close();
@@ -117,7 +118,7 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
     _oldCode.setNum(oldCode.toInt());
     _code.setNum(code.toInt());
 
-    QFile keyFile("/home/"+m_currentUser+"/.config/glacier-devicelock/key");
+    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)+"/key");
     if(keyFile.exists()) {
         if(!checkCode(oldCode)) {
             return false;
