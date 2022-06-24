@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6.0)
 
 project(glacier-devicelock-plugin
-    VERSION 0.1.1
+    VERSION 0.2.1
     DESCRIPTION "The Glacier devicelock plugin")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
