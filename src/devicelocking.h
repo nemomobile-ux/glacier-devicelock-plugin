@@ -22,10 +22,9 @@
 
 #include <QObject>
 
-class DeviceLocking : public QObject
-{
+class DeviceLocking : public QObject {
 public:
-    explicit DeviceLocking(QObject *parent = 0);
+    explicit DeviceLocking(QObject* parent = 0);
     ~DeviceLocking();
 
     bool isSet();

@@ -18,43 +18,42 @@
  */
 
 #include "devicelocking.h"
-#include <nemo-devicelock/host/hostauthenticationinput.h>
-#include <QDir>
-#include <QDebug>
 #include <QCryptographicHash>
+#include <QDebug>
+#include <QDir>
 #include <QStandardPaths>
+#include <nemo-devicelock/host/hostauthenticationinput.h>
 
 #include <glib.h>
 #include <unistd.h>
 
-DeviceLocking::DeviceLocking(QObject *parent)
+DeviceLocking::DeviceLocking(QObject* parent)
     : QObject()
     , m_settingsPath("/usr/share/lipstick/devicelock/devicelock_settings.conf")
     , m_currentUser(currentUser())
 {
-    if(m_currentUser.isEmpty() || m_currentUser == "root") {
+    if (m_currentUser.isEmpty() || m_currentUser == "root") {
         exit(NemoDeviceLock::HostAuthenticationInput::Failure);
     }
     QString deviceLockDirPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QDir deviceLockDir(deviceLockDirPath);
-    if(!deviceLockDir.exists()) {
+    if (!deviceLockDir.exists()) {
         deviceLockDir.mkpath(deviceLockDirPath);
     }
 
-    if(!QFile::exists(m_settingsPath)) {
+    if (!QFile::exists(m_settingsPath)) {
         initConfig();
     }
 }
 
 DeviceLocking::~DeviceLocking()
 {
-
 }
 
 bool DeviceLocking::isSet()
 {
-    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)+"/key");
-    if(keyFile.exists() && keyFile.size() > 0) {
+    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/key");
+    if (keyFile.exists() && keyFile.size() > 0) {
         return true;
     }
     return false;
@@ -79,21 +78,21 @@ void DeviceLocking::wipe()
     /*
      * TODO add correct wipe. Now wipe just remove key code file
      */
-    QFile::remove(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)+"/key");
+    QFile::remove(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/key");
 }
 
 bool DeviceLocking::checkCode(QByteArray code)
 {
-    if(!isSet()) {
+    if (!isSet()) {
         return false;
     }
 
-    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)+"/key");
+    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/key");
     keyFile.open(QIODevice::ReadOnly);
     QString key = keyFile.readLine();
     keyFile.close();
 
-    if(key == QCryptographicHash::hash(code, QCryptographicHash::Sha256)) {
+    if (key == QCryptographicHash::hash(code, QCryptographicHash::Sha256)) {
         setConfigKey("/desktop/nemo/devicelock/current_attempts", "0");
 
         QByteArray changeData;
@@ -118,9 +117,9 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
     _oldCode.setNum(oldCode.toInt());
     _code.setNum(code.toInt());
 
-    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)+"/key");
-    if(keyFile.exists()) {
-        if(!checkCode(oldCode)) {
+    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/key");
+    if (keyFile.exists()) {
+        if (!checkCode(oldCode)) {
             return false;
         }
     }
@@ -128,7 +127,7 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
     int minLength = getConfigKey("desktop", "nemo\\devicelock\\code_min_length", "5").toInt();
     int maxLength = getConfigKey("desktop", "nemo\\devicelock\\code_max_length", "42").toInt();
 
-    if(_code.length() < minLength || _code.length() > maxLength) {
+    if (_code.length() < minLength || _code.length() > maxLength) {
         return false;
     }
 
@@ -147,32 +146,25 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
 
 bool DeviceLocking::setConfigKey(QByteArray key, QByteArray value)
 {
-/*Preparate keyvalue*/
+    /*Preparate keyvalue*/
     QByteArray groupName = QString(key).split("/").at(1).toUtf8();
-    key.remove(0,groupName.length()+2);
-    key.replace("/","\\");
+    key.remove(0, groupName.length() + 2);
+    key.replace("/", "\\");
 
-/*Write to config*/
-    GError *error = nullptr;
-    gchar *str;
-    GKeyFile * const settings = g_key_file_new();
+    /*Write to config*/
+    GError* error = nullptr;
+    gchar* str;
+    GKeyFile* const settings = g_key_file_new();
 
-    g_key_file_load_from_file(settings
-                              , m_settingsPath.toUtf8().constData()
-                              , G_KEY_FILE_NONE
-                              , &error);
+    g_key_file_load_from_file(settings, m_settingsPath.toUtf8().constData(), G_KEY_FILE_NONE, &error);
 
-    if(error) {
+    if (error) {
         return false;
     }
 
-    g_key_file_set_string(settings
-                          ,groupName.constData()
-                          ,key.constData()
-                          ,value.constData());
+    g_key_file_set_string(settings, groupName.constData(), key.constData(), value.constData());
 
-
-    str = g_key_file_to_data (settings, NULL, NULL);
+    str = g_key_file_to_data(settings, NULL, NULL);
     g_key_file_free(settings);
     error = nullptr;
 
@@ -194,28 +186,25 @@ const QString DeviceLocking::currentUser()
 
 QByteArray DeviceLocking::getConfigKey(QByteArray group, QByteArray key, QByteArray defaultValue)
 {
-    GError *error = nullptr;
-    gchar *str;
-    GKeyFile * const settings = g_key_file_new();
+    GError* error = nullptr;
+    gchar* str;
+    GKeyFile* const settings = g_key_file_new();
 
-    g_key_file_load_from_file(settings
-                              , m_settingsPath.toUtf8().constData()
-                              , G_KEY_FILE_NONE
-                              , &error);
-    if(error) {
+    g_key_file_load_from_file(settings, m_settingsPath.toUtf8().constData(), G_KEY_FILE_NONE, &error);
+    if (error) {
         qWarning() << "Error load settings file" << m_settingsPath;
         return QByteArray();
     }
 
     error = nullptr;
-    gchar *string = g_key_file_get_string(settings,
-                          group.constData(),
-                          key.constData(),
-                          &error);
+    gchar* string = g_key_file_get_string(settings,
+        group.constData(),
+        key.constData(),
+        &error);
 
-    if(error) {
+    if (error) {
         qWarning() << "Can't get key" << key << "from" << m_settingsPath;
-        setConfigKey("/"+group+"/"+key, defaultValue);
+        setConfigKey("/" + group + "/" + key, defaultValue);
         return defaultValue;
     }
 
@@ -225,26 +214,26 @@ QByteArray DeviceLocking::getConfigKey(QByteArray group, QByteArray key, QByteAr
 void DeviceLocking::initConfig()
 {
     QDir confDir("/usr/share/lipstick/devicelock/");
-    if(!confDir.exists()) {
+    if (!confDir.exists()) {
         confDir.mkpath("/usr/share/lipstick/devicelock/");
     }
     QFile configFile(m_settingsPath);
-    configFile.open(QIODevice::WriteOnly|QIODevice::Append);
+    configFile.open(QIODevice::WriteOnly | QIODevice::Append);
     configFile.close();
 
     QByteArray confBase = "/desktop/nemo/devicelock/";
 
-// Load def value like here https://github.com/sailfishos/nemo-qml-plugin-devicelock/blob/master/src/nemo-devicelock/private/settingswatcher.cpp#L68
-    setConfigKey(confBase+"automatic_locking", "0");
-    setConfigKey(confBase+"code_current_length", "0");
-    setConfigKey(confBase+"code_min_length", "5");
-    setConfigKey(confBase+"code_max_length", "42");
-    setConfigKey(confBase+"maximum_attempts", "-1");
-    setConfigKey(confBase+"current_attempts", "0");
-    setConfigKey(confBase+"peeking_allowed", "1");
-    setConfigKey(confBase+"sideloading_allowed", "-1");
-    setConfigKey(confBase+"show_notification", "1");
-    setConfigKey(confBase+"code_input_is_keyboard", "false");
-    setConfigKey(confBase+"code_current_is_digit_only", "true");
-    setConfigKey(confBase+"encrypt_home", "false");
+    // Load def value like here https://github.com/sailfishos/nemo-qml-plugin-devicelock/blob/master/src/nemo-devicelock/private/settingswatcher.cpp#L68
+    setConfigKey(confBase + "automatic_locking", "0");
+    setConfigKey(confBase + "code_current_length", "0");
+    setConfigKey(confBase + "code_min_length", "5");
+    setConfigKey(confBase + "code_max_length", "42");
+    setConfigKey(confBase + "maximum_attempts", "-1");
+    setConfigKey(confBase + "current_attempts", "0");
+    setConfigKey(confBase + "peeking_allowed", "1");
+    setConfigKey(confBase + "sideloading_allowed", "-1");
+    setConfigKey(confBase + "show_notification", "1");
+    setConfigKey(confBase + "code_input_is_keyboard", "false");
+    setConfigKey(confBase + "code_current_is_digit_only", "true");
+    setConfigKey(confBase + "encrypt_home", "false");
 }
