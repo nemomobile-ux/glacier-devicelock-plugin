@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
     parser.addOption(wipe);
     parser.addOption(clearCode);
     parser.addOption(setConfigKey);
+    parser.addHelpOption();
     parser.process(a);
 
     const QStringList args = parser.positionalArguments();
