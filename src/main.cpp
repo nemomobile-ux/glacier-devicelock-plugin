@@ -25,27 +25,18 @@
 
 int main(int argc, char* argv[])
 {
-    /*
-        --is-set
-        --check-code <CODE>
-        --set-code <OLD_CODE> <NEW_CODE>
-        --is-encryption-supported
-        --encrypt-home
-        --set-config-key <TOKEN> <KEY> <VALUE>
-        --wipe
-    */
     QCoreApplication a(argc, argv);
 
     DeviceLocking* dvl = new DeviceLocking();
     QCommandLineOption isSet(QStringList() << "is-set");
-    QCommandLineOption unlock(QStringList() << "unlock");
-    QCommandLineOption checkCode(QStringList() << "check-code");
-    QCommandLineOption setCode(QStringList() << "set-code");
+    QCommandLineOption unlock(QStringList() << "unlock", "<code>");
+    QCommandLineOption checkCode(QStringList() << "check-code", "<code>");
+    QCommandLineOption setCode(QStringList() << "set-code", "<old_code> <new_code>");
     QCommandLineOption isEncryptionSupported(QStringList() << "is-encryption-supported");
     QCommandLineOption encryptHome(QStringList() << "encrypt-home");
     QCommandLineOption wipe(QStringList() << "wipe");
     QCommandLineOption clearCode(QStringList() << "clear-code");
-    QCommandLineOption setConfigKey(QStringList() << "set-config-key");
+    QCommandLineOption setConfigKey(QStringList() << "set-config-key", "<code> <key> <value>");
 
     QCommandLineParser parser;
     parser.addOption(isSet);
@@ -70,6 +61,7 @@ int main(int argc, char* argv[])
 
     if (parser.isSet(checkCode) || parser.isSet(unlock)) {
         if (args.length() != 1) {
+            qWarning() << "--check-code/--unlock requires <CODE> argument";
             return NemoDeviceLock::HostAuthenticationInput::Failure;
         }
 
@@ -80,6 +72,7 @@ int main(int argc, char* argv[])
 
     if (parser.isSet(setCode)) {
         if (args.length() != 2) {
+            qWarning() << "--set-code requires <old_code> <new_code>";
             return NemoDeviceLock::HostAuthenticationInput::Failure;
         }
 
@@ -105,19 +98,17 @@ int main(int argc, char* argv[])
     }
 
     if (parser.isSet(setConfigKey)) {
-        qDebug() << "Set key" << args.length();
         if (args.length() != 3) {
-            qDebug() << "Set key1";
+            qWarning() << "--set-config-key incorrect number of arguments";
             return NemoDeviceLock::HostAuthenticationInput::Failure;
         }
 
         if (!dvl->checkCode(args[0].toUtf8())) {
-            qDebug() << "Set key2";
+            qWarning() << "Entered code is not valid" << args[0].toUtf8();
             return NemoDeviceLock::HostAuthenticationInput::Failure;
         }
 
         if (dvl->setConfigKey(args[1].toUtf8(), args[2].toUtf8())) {
-            qDebug() << "Set key3";
             return NemoDeviceLock::HostAuthenticationInput::Success;
         }
     }
