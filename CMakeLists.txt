@@ -9,8 +9,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include(FeatureSummary)
 include(GNUInstallDirs)
 
-set(QT_MIN_VERSION "5.12.0")
-find_package(Qt5 ${QT_MIN_VERSION} COMPONENTS Core DBus REQUIRED)
+set(QT_MIN_VERSION "6.0.0")
+find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core DBus REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_search_module(GLIB REQUIRED glib-2.0)
