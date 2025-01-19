@@ -18,4 +18,4 @@ pkg_search_module(GLIB REQUIRED glib-2.0)
 add_subdirectory(src)
 
 install(FILES devicelock.conf
-    DESTINATION /usr/share/lipstick/devicelock/)
+    DESTINATION ${SHARE_INSTALL_PREFIX}/lipstick/devicelock/)
