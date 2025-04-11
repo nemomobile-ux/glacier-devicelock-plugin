@@ -1,0 +1,2 @@
+[DeviceLock]
+pluginName=@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/qt6/plugins/devicelock/glacier-devicelock

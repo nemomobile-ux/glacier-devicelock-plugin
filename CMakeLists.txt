@@ -19,5 +19,9 @@ pkg_search_module(GLIB REQUIRED glib-2.0)
 
 add_subdirectory(src)
 
-install(FILES devicelock.conf
+configure_file(devicelock.conf.in
+    ${CMAKE_CURRENT_BINARY_DIR}/devicelock.conf
+    @ONLY)
+
+install(FILES  ${CMAKE_CURRENT_BINARY_DIR}/devicelock.conf
     DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/lipstick/devicelock/)
