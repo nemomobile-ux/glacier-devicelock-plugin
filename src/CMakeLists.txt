@@ -13,4 +13,4 @@ target_link_libraries(glacier-devicelock
 target_include_directories(glacier-devicelock PRIVATE ${GLIB_INCLUDE_DIRS})
 
 install(TARGETS glacier-devicelock RUNTIME
-	DESTINATION ${LIB_INSTALL_DIR}/qt6/plugins/devicelock/)
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt6/plugins/devicelock/)
