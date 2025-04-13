@@ -89,8 +89,9 @@ bool DeviceLocking::checkCode(QByteArray code)
 
     QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/key");
     keyFile.open(QIODevice::ReadOnly);
-    QString key = keyFile.readLine();
+    QByteArray keyBase64 = keyFile.readLine();
     keyFile.close();
+    QByteArray key = QByteArray::fromBase64(keyBase64);
 
     if (key == QCryptographicHash::hash(code, QCryptographicHash::Sha256)) {
         setConfigKey("/desktop/nemo/devicelock/current_attempts", "0");
@@ -109,14 +110,8 @@ bool DeviceLocking::checkCode(QByteArray code)
     return false;
 }
 
-bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
+bool DeviceLocking::setCode(QByteArray oldCode, QByteArray newCode)
 {
-    QByteArray _oldCode;
-    QByteArray _code;
-
-    _oldCode.setNum(oldCode.toInt());
-    _code.setNum(code.toInt());
-
     QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/key");
     if (keyFile.exists()) {
         if (!checkCode(oldCode)) {
@@ -127,18 +122,18 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray code)
     int minLength = getConfigKey("desktop", "nemo\\devicelock\\code_min_length", "5").toInt();
     int maxLength = getConfigKey("desktop", "nemo\\devicelock\\code_max_length", "42").toInt();
 
-    if (_code.length() < minLength || _code.length() > maxLength) {
+    if (newCode.length() < minLength || newCode.length() > maxLength) {
         return false;
     }
 
-    QByteArray key = QCryptographicHash::hash(_code, QCryptographicHash::Sha256);
+    QByteArray key = QCryptographicHash::hash(newCode, QCryptographicHash::Sha256);
 
     keyFile.open(QIODevice::WriteOnly);
-    keyFile.write(key);
+    keyFile.write(key.toBase64());
     keyFile.close();
 
     QByteArray codeLength;
-    codeLength.setNum(_code.length());
+    codeLength.setNum(newCode.length());
     setConfigKey("/desktop/nemo/devicelock/code_current_length", codeLength);
 
     return true;
