@@ -27,15 +27,14 @@
 #include <glib.h>
 #include <unistd.h>
 
+const QString deviceLockDirPath = "/etc/glacier";
+const QString deviceLockFile = "/etc/glacier/deviceLock";
+
 DeviceLocking::DeviceLocking(QObject* parent)
     : QObject()
     , m_settingsPath("/usr/share/lipstick/devicelock/devicelock_settings.conf")
     , m_currentUser(currentUser())
 {
-    if (m_currentUser.isEmpty() || m_currentUser == "root") {
-        exit(NemoDeviceLock::HostAuthenticationInput::Failure);
-    }
-    QString deviceLockDirPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QDir deviceLockDir(deviceLockDirPath);
     if (!deviceLockDir.exists()) {
         deviceLockDir.mkpath(deviceLockDirPath);
@@ -52,7 +51,7 @@ DeviceLocking::~DeviceLocking()
 
 bool DeviceLocking::isSet()
 {
-    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/key");
+    QFile keyFile(deviceLockFile);
     if (keyFile.exists() && keyFile.size() > 0) {
         return true;
     }
@@ -78,7 +77,7 @@ void DeviceLocking::wipe()
     /*
      * TODO add correct wipe. Now wipe just remove key code file
      */
-    QFile::remove(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/key");
+    QFile::remove(deviceLockFile);
 }
 
 bool DeviceLocking::checkCode(QByteArray code)
@@ -87,7 +86,7 @@ bool DeviceLocking::checkCode(QByteArray code)
         return false;
     }
 
-    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/key");
+    QFile keyFile(deviceLockFile);
     keyFile.open(QIODevice::ReadOnly);
     QByteArray keyBase64 = keyFile.readLine();
     keyFile.close();
@@ -112,7 +111,7 @@ bool DeviceLocking::checkCode(QByteArray code)
 
 bool DeviceLocking::setCode(QByteArray oldCode, QByteArray newCode)
 {
-    QFile keyFile(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/key");
+    QFile keyFile(deviceLockFile);
     if (keyFile.exists()) {
         if (!checkCode(oldCode)) {
             return false;
