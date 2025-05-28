@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6.0)
 
 project(glacier-devicelock-plugin
-    VERSION 0.3
+    VERSION 0.5
     DESCRIPTION "The Glacier devicelock plugin")
 
 set(CMAKE_AUTOMOC ON)
