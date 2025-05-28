@@ -89,7 +89,7 @@ bool DeviceLocking::checkCode(QByteArray code)
 
 bool DeviceLocking::setCode(QByteArray oldCode, QByteArray newCode)
 {
-    if(!m_devicePassword->checkCode(oldCode)) {
+    if (!m_devicePassword->checkCode(oldCode)) {
         return false;
     }
 
@@ -100,7 +100,7 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray newCode)
         return false;
     }
 
-    if(!m_devicePassword->setCode(oldCode, newCode)) {
+    if (!m_devicePassword->setCode(oldCode, newCode)) {
         return false;
     }
 

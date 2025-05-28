@@ -59,7 +59,7 @@ void GlacierDevicePassword::wipe()
 
 bool GlacierDevicePassword::checkCode(QByteArray code)
 {
-    if(!isSet()) {
+    if (!isSet()) {
         return true;
     }
 
