@@ -11,16 +11,19 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include(FeatureSummary)
 include(GNUInstallDirs)
 
+enable_testing()
+
 set(CMAKE_INSTALL_PREFIX /usr)
 
 set(QT_MIN_VERSION "6.0.0")
-find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core DBus REQUIRED)
+find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core DBus Test REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_search_module(GLIB REQUIRED glib-2.0)
 
 add_subdirectory(lib)
 add_subdirectory(src)
+add_subdirectory(tests)
 
 configure_file(devicelock.conf.in
     ${CMAKE_CURRENT_BINARY_DIR}/devicelock.conf

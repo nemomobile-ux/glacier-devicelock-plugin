@@ -17,21 +17,27 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef GLACIERDEVICEPASSWORD_H
-#define GLACIERDEVICEPASSWORD_H
+#ifndef UT_DEVICEPASSWORD_H
+#define UT_DEVICEPASSWORD_H
 
 #include <QObject>
+class GlacierDevicePassword;
 
-class GlacierDevicePassword : public QObject {
+class Ut_DevicePassword : public QObject {
     Q_OBJECT
-public:
-    explicit GlacierDevicePassword(QObject* parent = nullptr);
+private slots:
+    void init();
+    void cleanup();
+    void testNotHavePasswordFile();
+    void testEmptyPasswordFile();
+    void testSetNewPassword();
+    void testWrongPassword();
+    void testCorrectPassword();
+    void testWrongPasswordChanging();
+    void testCorrectPasswordChanging();
 
-    bool isSet();
-    void wipe();
-
-    bool checkCode(QByteArray code);
-    bool setCode(QByteArray oldCode, QByteArray newCode);
+private:
+    GlacierDevicePassword* m_devicePassword;
 };
 
-#endif // GLACIERDEVICEPASSWORD_H
+#endif // UT_DEVICEPASSWORD_H
