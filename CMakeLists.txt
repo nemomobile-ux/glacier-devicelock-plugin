@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.6.0)
 
 project(glacier-devicelock-plugin
-    VERSION 0.2.1
+    VERSION 0.3
     DESCRIPTION "The Glacier devicelock plugin")
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include(FeatureSummary)
@@ -17,6 +19,7 @@ find_package(PkgConfig REQUIRED)
 
 pkg_search_module(GLIB REQUIRED glib-2.0)
 
+add_subdirectory(lib)
 add_subdirectory(src)
 
 configure_file(devicelock.conf.in

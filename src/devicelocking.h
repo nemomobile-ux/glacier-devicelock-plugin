@@ -21,6 +21,7 @@
 #define DEVICELOCKING_H
 
 #include <QObject>
+#include <glacierdevicepassword.h>
 
 class DeviceLocking : public QObject {
 public:
@@ -38,9 +39,9 @@ public:
     bool setConfigKey(QByteArray key, QByteArray value);
 
 private:
-    const QString currentUser();
-    const QString m_currentUser;
     const QString m_settingsPath;
+
+    GlacierDevicePassword* m_devicePassword;
 
     QByteArray getConfigKey(QByteArray group, QByteArray key, QByteArray defaultValue = "-1");
     void initConfig();

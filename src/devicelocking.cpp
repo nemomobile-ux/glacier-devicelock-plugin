@@ -18,7 +18,6 @@
  */
 
 #include "devicelocking.h"
-#include <QCryptographicHash>
 #include <QDebug>
 #include <QDir>
 #include <QStandardPaths>
@@ -27,19 +26,11 @@
 #include <glib.h>
 #include <unistd.h>
 
-const QString deviceLockDirPath = "/etc/glacier";
-const QString deviceLockFile = "/etc/glacier/deviceLock";
-
 DeviceLocking::DeviceLocking(QObject* parent)
     : QObject()
     , m_settingsPath("/usr/share/lipstick/devicelock/devicelock_settings.conf")
-    , m_currentUser(currentUser())
+    , m_devicePassword(new GlacierDevicePassword(this))
 {
-    QDir deviceLockDir(deviceLockDirPath);
-    if (!deviceLockDir.exists()) {
-        deviceLockDir.mkpath(deviceLockDirPath);
-    }
-
     if (!QFile::exists(m_settingsPath)) {
         initConfig();
     }
@@ -51,11 +42,7 @@ DeviceLocking::~DeviceLocking()
 
 bool DeviceLocking::isSet()
 {
-    QFile keyFile(deviceLockFile);
-    if (keyFile.exists() && keyFile.size() > 0) {
-        return true;
-    }
-    return false;
+    return m_devicePassword->isSet();
 }
 
 bool DeviceLocking::isEncryptionSupported()
@@ -74,25 +61,16 @@ void DeviceLocking::encryptHome()
 
 void DeviceLocking::wipe()
 {
-    /*
-     * TODO add correct wipe. Now wipe just remove key code file
-     */
-    QFile::remove(deviceLockFile);
+    m_devicePassword->wipe();
 }
 
 bool DeviceLocking::checkCode(QByteArray code)
 {
-    if (!isSet()) {
+    if (!m_devicePassword->isSet()) {
         return false;
     }
 
-    QFile keyFile(deviceLockFile);
-    keyFile.open(QIODevice::ReadOnly);
-    QByteArray keyBase64 = keyFile.readLine();
-    keyFile.close();
-    QByteArray key = QByteArray::fromBase64(keyBase64);
-
-    if (key == QCryptographicHash::hash(code, QCryptographicHash::Sha256)) {
+    if (m_devicePassword->checkCode(code)) {
         setConfigKey("/desktop/nemo/devicelock/current_attempts", "0");
 
         QByteArray changeData;
@@ -111,11 +89,8 @@ bool DeviceLocking::checkCode(QByteArray code)
 
 bool DeviceLocking::setCode(QByteArray oldCode, QByteArray newCode)
 {
-    QFile keyFile(deviceLockFile);
-    if (keyFile.exists()) {
-        if (!checkCode(oldCode)) {
-            return false;
-        }
+    if(!m_devicePassword->checkCode(oldCode)) {
+        return false;
     }
 
     int minLength = getConfigKey("desktop", "nemo\\devicelock\\code_min_length", "5").toInt();
@@ -125,11 +100,9 @@ bool DeviceLocking::setCode(QByteArray oldCode, QByteArray newCode)
         return false;
     }
 
-    QByteArray key = QCryptographicHash::hash(newCode, QCryptographicHash::Sha256);
-
-    keyFile.open(QIODevice::WriteOnly);
-    keyFile.write(key.toBase64());
-    keyFile.close();
+    if(!m_devicePassword->setCode(oldCode, newCode)) {
+        return false;
+    }
 
     QByteArray codeLength;
     codeLength.setNum(newCode.length());
@@ -167,15 +140,6 @@ bool DeviceLocking::setConfigKey(QByteArray key, QByteArray value)
     }
 
     return true;
-}
-
-const QString DeviceLocking::currentUser()
-{
-    QString name = qgetenv("USER");
-    if (name.isEmpty()) {
-        name = qgetenv("USERNAME");
-    }
-    return name;
 }
 
 QByteArray DeviceLocking::getConfigKey(QByteArray group, QByteArray key, QByteArray defaultValue)
