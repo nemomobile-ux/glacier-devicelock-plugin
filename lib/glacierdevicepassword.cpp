@@ -86,6 +86,7 @@ bool GlacierDevicePassword::setCode(QByteArray oldCode, QByteArray newCode)
         keyFile.close();
         return true;
     } else {
+        qWarning() << "Cannot open deviceLockFile for WriteOnly " << deviceLockFile;
         return false;
     }
 }
